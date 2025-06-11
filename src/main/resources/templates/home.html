@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Inicio</title>
+    <style>
+        /* === CSS BASE DEL HOME === */
+        /* Reseteo de márgenes y padding */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            padding: 0 20px;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* Barra de navegación superior */
+        .header {
+            background-color: #ffffff;
+            padding: 20px 50px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            color: #2b78e4;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .navbar-items {
+            display: flex;
+        }
+
+        .navbar-item {
+            margin-right: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            color: #333;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        /* Hover para enlaces */
+        .navbar-item:hover {
+            color: #2b78e4;
+            text-decoration: none;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            position: relative;
+            gap: 15px;
+        }
+
+        #username {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .notification-icon {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        /* Badge contador */
+        .notification-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: red;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 50%;
+            padding: 2px 6px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        /* Dropdown para notificaciones */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropbtn {
+            background-color: transparent;
+            border: none;
+            color: #333;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Dropdown content notificaciones */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #ffffff; /* Cambiado a blanco */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    z-index: 10;
+    min-width: 320px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 0;
+    border: 1px solid #ddd; /* Agregado un borde gris suave para separación */
+}
+
+.dropdown:hover .dropdown-content,
+.dropdown:focus-within .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    padding: 12px 15px;
+    font-weight: normal;
+    font-size: 14px;
+    color: #333;
+    text-decoration: none;
+    display: block;
+    white-space: normal;
+    border-bottom: 1px solid #eee;
+    background-color: #fff; /* Aseguramos que el fondo de cada notificación también sea blanco */
+}
+
+.dropdown-content a:last-child {
+    border-bottom: none;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.notificacion-nueva {
+    font-weight: 700;
+    background-color: #e8f5e9; /* Mantén el color verde claro de la notificación nueva si quieres diferenciarla */
+}
+        /* Ajustes adicionales opcionales para las notificaciones */
+.notification-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    background-color: #ffffff; /* Blanco */
+    color: #333; /* Gris oscuro para el texto */
+    font-weight: 600;
+    font-size: 16px;
+    border-radius: 6px 6px 0 0;
+    user-select: none;
+}
+
+        /* === ESTILOS DEL HERO Y SECCIONES === */
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: transparent;
+            width: 100%;
+        }
+
+        .hero-content {
+            width: 50%;
+            padding: 0;
+        }
+
+        .hero h2 {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2b78e4;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #777;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .hero-image {
+            width: 45%;
+            height: auto;
+            border: none;
+            box-shadow: none;
+            border-radius: 5px;
+        }
+
+        .section {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section h3 {
+            font-size: 28px;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .section-content {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: #fff;
+            width: 30%;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .card img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: none;
+            box-shadow: none;
+        }
+
+        .card p {
+            font-size: 16px;
+            color: #333;
+            margin: 5px 0;
+        }
+
+        /* === NUEVO MENÚ DESPLEGABLE INFERIOR DERECHO EJERCICIOS PENDIENTES === */
+        #pendingExercisesWrapper {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            z-index: 1500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            font-family: Arial, sans-serif;
+            user-select: none;
+        }
+
+        #pendingExercisesList {
+            display: none;
+            background: white;
+            border: 1px solid #2b78e4;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            max-height: 300px;
+            width: 320px;
+            overflow-y: auto;
+            font-weight: normal;
+            font-size: 14px;
+            color: #333;
+            padding: 10px 0;
+            margin-bottom: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            transform-origin: bottom center;
+            transform: translateY(10px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1600;
+        }
+
+        #pendingExercisesWrapper:hover #pendingExercisesList,
+        #pendingExercisesWrapper:focus-within #pendingExercisesList {
+            display: block;
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #pendingExercisesList a {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s ease;
+        }
+
+        #pendingExercisesList a:last-child {
+            border-bottom: none;
+        }
+
+        #pendingExercisesList a:hover {
+            background-color: #9bb8e0;
+        }
+
+        .pending-exercise-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #2b78e4;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .pending-exercise-icon {
+            width: 20px;
+            height: 20px;
+            fill: #2b78e4;
+            flex-shrink: 0;
+        }
+
+        .status-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+            font-size: 13px;
+            color: #b58900;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .status-circle {
+            width: 16px;
+            height: 16px;
+            background-color: #f9d71c;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #b58900;
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .status-circle svg {
+            width: 10px;
+            height: 10px;
+            fill: #b58900;
+        }
+
+        .empty-message {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            padding: 20px 0;
+            font-size: 16px;
+        }
+
+        #pendingExercisesMenu {
+            background-color: #2b78e4;
+            color: white;
+            border: 1px solid #2b78e4;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.5);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 12px 25px;
+            user-select: none;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            white-space: nowrap;
+            width: 320px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        #pendingExercisesMenu svg {
+            width: 22px;
+            height: 22px;
+            fill: white;
+            flex-shrink: 0;
+        }
+
+        #pendingExercisesMenu:hover {
+            background-color: #2b78e4;
+            border-color: #2b78e4;
+        }
+    </style>
+</head>
+
+<body>
+<!-- Barra de navegación -->
+<header class="header">
+    <div class="navbar">
+        <div class="logo">
+            <h1>Krisaldu</h1>
+        </div>
+        <div class="navbar-items">
+            <a href="/home" class="navbar-item">Inicio</a>
+            <a href="/ejercicios" class="navbar-item">Ejercicios</a>
+            <a href="/minijuegos" class="navbar-item">Minijuegos</a>
+        </div>
+        <div class="user-info">
+            <span id="username">Hola, <span th:text="${nombre}">Usuario</span></span>
+            <div class="dropdown" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-controls="notificaciones-menu">
+                <button class="dropbtn" aria-label="Notificaciones">
+                    <img src="images/notificacion.png" alt="Notificaciones" class="notification-icon" />
+                    <span class="notification-count" th:if="${notificacionesSinLeer > 0}" th:text="${notificacionesSinLeer}">0</span>
+                </button>
+                <!-- Notificaciones desplegables -->
+                <div class="dropdown-content" id="notificaciones-menu" role="menu" aria-hidden="true" tabindex="-1"
+                     style="max-height: 300px; overflow-y: auto; min-width: 320px; background-color: #fff; border-radius: 5px; box-shadow: 0 8px 16px rgba(0,0,0,0.15);">
+                    <div th:if="${#lists.isEmpty(notificaciones)}" style="padding: 10px; font-style: italic; color: #666;">
+                        No tienes notificaciones.
+                    </div>
+
+                    <a th:each="notificacion : ${notificaciones}"
+                       th:href="@{/verMensaje/{mensajeId}(mensajeId=${notificacion.mensajeId})}"
+                       role="menuitem" tabindex="0"
+                       th:classappend="${notificacion.leido} ? '' : 'notificacion-nueva'">
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4caf50; font-weight: 600; user-select: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="#4caf50" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+                                <path d="M3 10v4h2l5 5V5L5 10H3zm16.5 2c0-1.05-.63-1.94-1.5-2.3v4.6c.87-.36 1.5-1.25 1.5-2.3zM14 7.7v8.6l3.5 2v-13l-3.5 2z"/>
+                            </svg>
+                            <span>Mensaje del terapeuta</span>
+                        </div>
+
+                        <div style="font-size: 15px; color: #333;">
+                            <span th:text="${notificacion.contenidoMensaje}">Contenido del mensaje aquí...</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <button class="dropbtn">▼</button>
+                <div class="dropdown-content">
+                    <a href="#" id="logout">Cerrar Sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Menú desplegable inferior derecho para ejercicios pendientes -->
+<div id="pendingExercisesWrapper" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-label="Ejercicios pendientes">
+    <div id="pendingExercisesList" role="menu" aria-hidden="true" tabindex="-1" aria-live="polite" aria-relevant="all">
+        <div th:if="${#lists.isEmpty(ejerciciosPendientes)}" class="empty-message">
+            No tienes ejercicios pendientes.
+        </div>
+        <a th:each="ejercicio : ${ejerciciosPendientes}" th:href="@{/ejercicios}" role="menuitem" tabindex="0">
+            <div class="pending-exercise-header">
+                <!-- Icono inspeccionar archivo (document search) -->
+                <svg class="pending-exercise-icon" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#2b78e4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M16 3v4M21 14.5l-5-5"/>
+                </svg>
+                <span>Ejercicio pendiente</span>
+            </div>
+            <span th:text="${ejercicio.nombre}" style="font-weight: 600; font-size: 15px; color: #333;"></span>
+            <div class="status-label">
+                <div class="status-circle" aria-label="Por entregar">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#b58900" aria-hidden="true" focusable="false">
+                        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm.75 14h-1.5v-1.5h1.5V16zm0-3h-1.5V7h1.5v6z"/>
+                    </svg>
+                </div>
+                <span>Por entregar</span>
+            </div>
+        </a>
+    </div>
+    <div id="pendingExercisesMenu" role="button" tabindex="0">
+        <!-- Icono hamburguesa inline SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+            <rect y="4" width="24" height="2"></rect>
+            <rect y="11" width="24" height="2"></rect>
+            <rect y="18" width="24" height="2"></rect>
+        </svg>
+        <span>Ejercicios pendientes</span>
+    </div>
+</div>
+
+<!-- Sección Hero (Nuestra empresa) -->
+<section class="hero">
+    <div class="hero-content">
+        <h2>Transforma tu mente, transforma tu vida</h2>
+        <p>En nuestro centro de desarrollo cognitivo, nos enfocamos en potenciar tu capacidad mental a través de
+            ejercicios diseñados para mejorar tu concentración, memoria y habilidades cognitivas. Creemos que la mente
+            es el motor de nuestro crecimiento, y estamos comprometidos en brindarte herramientas efectivas para que
+            logres un bienestar mental duradero. ¡Únete a nosotros y comienza tu viaje hacia una mente más ágil y un
+            futuro más brillante!</p>
+    </div>
+    <img src="/images/imagen2.png" alt="" class="hero-image" />
+</section>
+
+
+<script>
+    // Funcionalidad para cerrar sesión
+    document.getElementById('logout').addEventListener('click', function () {
+        alert("Cerrando sesión...");
+        window.location.href = "/login";
+    });
+</script>
+
+</body>
+
+</html>

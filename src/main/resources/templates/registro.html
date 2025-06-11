@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Registro de Usuario</title>
+    <style>
+        /* Reset y estilo base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 320px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px 25px;
+            text-align: center;
+            user-select: none;
+        }
+
+        h2 {
+            font-weight: 700;
+            font-size: 24px;
+            color: #000000;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #4caf50;
+            font-weight: 600;
+            margin-bottom: 6px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 15px;
+            border: 1.5px solid #c8e6c9;
+            border-radius: 6px;
+            font-size: 15px;
+            color: #333;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="number"]:focus,
+        input[type="password"]:focus,
+        select:focus {
+            border-color: #4caf50;
+            outline: none;
+            box-shadow: 0 0 5px #a5d6a7;
+        }
+
+        button {
+            width: 100%;
+            padding: 11px 0;
+            background: #4caf50;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.25s ease;
+        }
+
+        button:hover,
+        button:focus {
+            background: #388e3c;
+            outline: none;
+        }
+
+        p {
+            margin-top: 14px;
+            font-size: 13px;
+            color: #4caf50;
+        }
+
+        p a {
+            color: #2b78e4;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        p a:hover,
+        p a:focus {
+            text-decoration: underline;
+        }
+
+        /* SweetAlert minimal - mismo CSS que login */
+        .swal2-popup.custom-swal {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+            border-radius: 10px !important;
+            padding: 1.5em !important;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.3) !important;
+        }
+
+        .swal2-title {
+            color: #4caf50 !important;
+            font-weight: 600 !important;
+            font-size: 20px !important;
+        }
+
+        .swal2-html-container {
+            font-size: 14px !important;
+            color: #444 !important;
+        }
+
+        .swal2-confirm {
+            background: #4caf50 !important;
+            border: none !important;
+            border-radius: 6px !important;
+            padding: 9px 24px !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            box-shadow: none !important;
+        }
+
+        .swal2-confirm:hover {
+            background: #388e3c !important;
+        }
+
+        .swal2-cancel {
+            display: none !important;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+<div class="container">
+    <h2>Registro de Usuario</h2>
+
+    <form action="#" th:action="@{/registro}" method="post" id="registroForm">
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" name="nombre" placeholder="Ingrese su nombre" required />
+
+        <label for="apellido">Apellido</label>
+        <input type="text" id="apellido" name="apellido" placeholder="Ingrese su apellido" required />
+
+        <label for="edad">Edad</label>
+        <input type="number" id="edad" name="edad" placeholder="Ingrese su edad" required min="1" max="120" />
+
+        <label for="condicion">Condición</label>
+        <select id="condicion" name="condicion" required>
+            <option value="" disabled selected>Seleccione una condición</option>
+            <option value="Esguince de tobillo">Esguince de tobillo</option>
+            <option value="Tendinitis">Tendinitis</option>
+        </select>
+
+        <label for="dni">DNI</label>
+        <input type="text" id="dni" name="dni" placeholder="Ingrese su DNI (8 dígitos)" required pattern="\d{8}" title="El DNI debe tener 8 dígitos" maxlength="8" oninput="validateDni(this)" />
+
+        <label for="email">Correo Electrónico (Gmail)</label>
+        <input type="email" id="email" name="email" placeholder="Ingrese su correo electrónico" required />
+
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" name="password" placeholder="Ingrese su contraseña (más de 6 caracteres)" required minlength="6" />
+
+        <button type="submit">Registrarse</button>
+    </form>
+
+    <p>¿Ya tienes una cuenta? <a href="/login">Iniciar sesión</a></p>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function () {
+      let successMessage = /*[[${successMessage}]]*/ null;
+      let errorMessage = /*[[${errorMessage}]]*/ null;
+
+      if (successMessage !== null && successMessage !== '') {
+        Swal.fire({
+          title: successMessage,
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false,
+          customClass: 'custom-swal'
+        }).then(() => {
+          window.location.href = '/login';
+        });
+      } else if (errorMessage !== null && errorMessage !== '') {
+        Swal.fire({
+          title: 'Error',
+          html: errorMessage,
+          icon: 'error',
+          customClass: 'custom-swal',
+          confirmButtonText: 'Aceptar'
+        });
+      }
+    });
+
+    function validateDni(input) {
+        let value = input.value;
+        if (value.length > 8) {
+            input.value = value.substring(0, 8); // Limita a 8 caracteres
+        }
+    }
+    /*]]>*/
+</script>
+
+</body>
+
+</html>

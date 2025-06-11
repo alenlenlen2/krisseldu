@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Iniciar sesión</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f5f9; /* Suave fondo gris */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Contenedor */
+        .login-container {
+            width: 360px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            padding: 40px 35px;
+            text-align: center;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .login-container:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Avatar */
+        .avatar img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 30px;
+            border: 3px solid #4caf50;
+            object-fit: cover;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.4);
+            transition: transform 0.3s ease;
+        }
+
+        .avatar img:hover {
+            transform: scale(1.1);
+        }
+
+        /* Labels */
+        label {
+            display: block;
+            color: #000000;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-align: left;
+            font-size: 15px;
+            letter-spacing: 0.03em;
+        }
+
+        /* Inputs */
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 22px;
+            border: 2px solid #c8e6c9;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #2c2c2c;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            font-weight: 500;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: #4caf50;
+            outline: none;
+            box-shadow: 0 0 8px #81c784;
+        }
+
+        /* Botón */
+        button {
+            width: 100%;
+            padding: 16px 0;
+            background: #009e0f;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 800;
+            font-size: 17px;
+            cursor: pointer;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        button:hover,
+        button:focus {
+            background: #388e3c;
+            box-shadow: 0 6px 16px rgba(56, 142, 60, 0.6);
+            outline: none;
+        }
+
+        /* Enlaces */
+        .forgot-password {
+            margin-top: 18px;
+            font-size: 14px;
+            color: #009e0f;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+        }
+
+        .forgot-password a {
+            color: #2b78e4;
+            text-decoration: none;
+            transition: color 0.25s ease;
+        }
+
+        .forgot-password a:hover,
+        .forgot-password a:focus {
+            text-decoration: underline;
+            color: #009e0f;
+            outline: none;
+        }
+    </style>
+
+    <!-- Agregar SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+<div class="login-container">
+    <div class="avatar">
+        <img src="/images/usuario.png" alt="Avatar de usuario" />
+    </div>
+    <form id="loginForm" action="/login" method="post">
+        <label for="dni">DNI</label>
+        <input type="text" id="dni" name="dni" placeholder="Ingrese su DNI" required autocomplete="dni" />
+
+        <label for="contrasena">Contraseña</label>
+        <input type="password" id="contrasena" name="contrasena" placeholder="Ingrese su contraseña" required autocomplete="current-password" />
+
+        <button type="submit">INICIAR SESIÓN</button>
+
+        <div class="forgot-password">
+            <a href="/forgot-password">¿Olvidó su contraseña?</a>
+            <a href="/registro">Registrarse</a>
+        </div>
+    </form>
+
+    <!-- Mostrar mensajes de error si hay alguno -->
+    <div th:if="${errorMessage}" th:text="${errorMessage}" class="error-message"></div>
+</div>
+
+<!-- Mostrar SweetAlert en caso de éxito -->
+<script>
+    const successMessage = /*[[${successMessage}]]*/ null;
+    if (successMessage) {
+        Swal.fire({
+            title: '¡Éxito!',
+            text: successMessage,
+            icon: 'success',
+            confirmButtonText: 'Aceptar'
+        }).then(() => {
+            // Redirigir a la página correspondiente después de la alerta
+            window.location.href = '/home'; // O ajusta la redirección según el rol del usuario
+        });
+    }
+</script>
+</body>
+
+</html>
