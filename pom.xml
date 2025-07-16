@@ -45,6 +45,7 @@
 
 
 
+
 		<!-- Spring Boot Starter Data JDBC -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -70,6 +71,13 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- pom.xml -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
+
 	</dependencies>
 
 

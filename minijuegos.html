@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Minijuegos</title>
+    <style>
+        /* Contenedor de las tarjetas de los minijuegos */
+/* Contenedor de las tarjetas de los minijuegos */
+.minijuego-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Ajusta el tamaño de las tarjetas */
+    gap: 30px;  /* Distancia entre cada tarjeta */
+    justify-content: center; /* Centra las tarjetas horizontalmente */
+    justify-items: center; /* Alinea las tarjetas dentro de sus celdas */
+    margin-top: 40px;
+    margin-bottom: 40px;
+    padding: 0 10px; /* Agrega un poco de espacio a los lados para evitar que las tarjetas lleguen al borde */
+}
+
+/* Estilo de las tarjetas de los minijuegos */
+.game-card {
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Caja más suave */
+    padding: 20px;
+    text-align: center;
+    height: 250px; /* Altura ajustada para tarjetas más grandes */
+    width: 280px;  /* Ancho ajustado */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column; /* Disposición vertical de los contenidos */
+    justify-content: space-between; /* Espacio entre el título y el botón */
+    align-items: center; /* Centrado del contenido */
+    border: 2px solid #f0f0f0; /* Borde suave y minimalista */
+    margin: 0;  /* Elimina el margen en las tarjetas para que el espacio entre ellas sea controlado por gap */
+}
+
+
+                /* Efecto de hover en las tarjetas */
+                .game-card:hover {
+                    transform: translateY(-5px); /* Sutil elevación */
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Sombra más intensa */
+                }
+                .game-card p {
+    text-align: justify; /* Justifica el texto */
+    margin-bottom: 15px; /* Añade espacio entre el texto y el botón */
+}
+
+                /* Estilo del texto del título dentro de la tarjeta */
+                .game-card h3 {
+                    font-size: 20px;
+                    color: #2b78e4;
+                    font-weight: bold;
+                    margin-bottom: 15px; /* Espacio entre el título y el botón */
+                }
+
+                /* Estilo de los botones dentro de las tarjetas */
+                .start-btn {
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 12px 25px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    transition: background-color 0.3s ease, transform 0.3s ease;
+                    width: 100%; /* Hace que el botón ocupe todo el ancho de la tarjeta */
+                    max-width: 180px; /* Limita el ancho máximo del botón */
+                }
+
+                .start-btn:hover {
+                    background-color: #45a049;
+                    transform: scale(1.05);
+                }
+
+                /* Estilos para los juegos */
+                .memory-game {
+                    display: flex; /* Cambiar a flexbox */
+                    justify-content: center; /* Alinear los elementos al centro */
+                    align-items: center; /* Alinear los elementos verticalmente */
+                    gap: 15px; /* Espacio entre los elementos */
+                    margin: 20px 0; /* Espacio arriba y abajo */
+                    overflow-x: auto; /* Permite que se deslicen horizontalmente si exceden el ancho */
+                }
+
+                /* Juego de Memoria */
+                .memory-game {
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    gap: 10px;
+                }
+
+                .memory-card {
+                    width: 80px; /* Ancho de cada tarjeta */
+                    height: 80px; /* Alto de cada tarjeta */
+                    background-color: #2b78e4;
+                    border-radius: 10px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-size: 28px;
+                    cursor: pointer;
+                    transition: transform 0.3s ease, background-color 0.3s ease;
+                    margin: 5px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+
+                .memory-card.flipped {
+                    background-color: #ffffff;
+                    transform: rotateY(180deg);
+                }
+
+                .memory-card:hover {
+                    background-color: #e0e0e0;
+                }
+
+                /* Contenedor principal que envuelve el #guess-number */
+.center-wrapper {
+    display: flex;
+    justify-content: center;   /* Centra horizontalmente */
+    align-items: center;       /* Centra verticalmente */
+    height: 100vh;             /* Ocupa el 100% de la altura de la ventana */
+}
+
+/* Estilo para el contenedor del juego de adivinar el número */
+#guess-number {
+    display: flex;
+    justify-content: center;   /* Centra los elementos horizontalmente */
+    align-items: center;       /* Centra los elementos verticalmente */
+    flex-direction: column;    /* Coloca los elementos de manera vertical */
+    gap: 20px;                 /* Espacio entre los elementos */
+    text-align: center;        /* Centra el texto dentro del contenedor */
+}
+
+/* Estilo para el campo de texto */
+#guess-number input {
+    padding: 12px;
+    font-size: 18px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    width: 100%;
+    max-width: 300px;          /* Ancho máximo de 300px */
+    text-align: center;
+    transition: border 0.3s ease;
+}
+
+/* Estilo cuando el campo de texto tiene foco */
+#guess-number input:focus {
+    border: 2px solid #4CAF50;
+}
+
+.start-btn {
+    background-color: #009e0f;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    width: 100%; /* Hace que el botón ocupe todo el ancho de la tarjeta */
+    max-width: 180px; /* Limita el ancho máximo del botón */
+}
+/* Efecto de hover para los botones */
+.start-btn:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+}
+
+                #guess-result {
+                    font-size: 18px;
+                    color: #333;
+                    font-weight: bold;
+                    margin-top: 10px;
+                }
+
+/* Contenedor principal para los botones de secuencia */
+.center-wrapper {
+    display: flex;
+    justify-content: center;   /* Centra los elementos horizontalmente */
+    align-items: center;       /* Centra los elementos verticalmente */
+    height: 100vh;             /* Ocupa el 100% de la altura de la ventana */
+}
+
+/* Estilo para el contenedor de los botones de secuencia */
+.sequence-container {
+    display: flex;
+    justify-content: center;   /* Centra los botones horizontalmente */
+    align-items: center;       /* Centra los botones verticalmente */
+    gap: 15px;                 /* Espacio entre los botones */
+    text-align: center;        /* Centra el texto dentro del contenedor */
+}
+
+/* Estilo para cada botón de la secuencia */
+.sequence-button {
+    background-color: #2b78e4;
+    color: white;
+    padding: 25px;
+    border: none;
+    border-radius: 50%;
+    font-size: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+/* Efecto de hover para los botones */
+.sequence-button:hover {
+    background-color: #45a049;
+    transform: scale(1.1);
+}
+
+
+                #sequence-result {
+                    font-size: 18px;
+                    margin-top: 20px;
+                    color: #333;
+                    font-weight: bold;
+                }
+
+                /* Reset y estilos base */
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+
+                body {
+                    font-family: 'Arial', sans-serif;
+                    background-color: #f9f9f9;
+                    padding: 0 20px;
+                }
+
+                /* Header y Navbar */
+                .header {
+                    background-color: #ffffff;
+                    padding: 20px 50px;
+                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                    margin-bottom: 30px;
+                }
+
+                .navbar {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .logo h1 {
+                    font-size: 28px;
+                    color: #2b78e4; /* Krisaldu en verde */
+                    font-weight: bold;
+                    letter-spacing: 1px;
+                }
+
+                .navbar-items {
+                    display: flex;
+                }
+
+                .navbar-item {
+                    margin-right: 25px;
+                    font-size: 18px;
+                    cursor: pointer;
+                    color: #333;
+                    font-weight: bold;
+                    text-decoration: none;
+                    transition: all 0.3s ease;
+                }
+
+                .navbar-item:hover {
+                    color: #2b78e4;
+                    text-decoration: none;
+                }
+
+                .user-info {
+                    display: flex;
+                    align-items: center;
+                    position: relative;
+                    gap: 15px;
+                }
+
+                #username {
+                    font-size: 16px;
+                    color: #333;
+                }
+
+                .notification-icon {
+                    width: 20px;
+                    height: 20px;
+                    cursor: pointer;
+                    position: relative;
+                }
+
+                .notification-count {
+                    position: absolute;
+                    top: -5px;
+                    right: -5px;
+                    background-color: red;
+                    color: white;
+                    font-size: 12px;
+                    font-weight: bold;
+                    border-radius: 50%;
+                    padding: 2px 6px;
+                    min-width: 18px;
+                    text-align: center;
+                }
+
+                .dropdown {
+                    position: relative;
+                    display: inline-block;
+                }
+
+                .dropbtn {
+                    background-color: transparent;
+                    border: none;
+                    color: #333;
+                    font-size: 16px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+
+                .dropdown-content {
+                    display: none;
+                    position: absolute;
+                    right: 0;
+                    background-color: #fff;
+                    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+                    border-radius: 5px;
+                    z-index: 10;
+                    min-width: 280px;
+                    max-height: 300px;
+                    overflow-y: auto;
+                }
+
+                .dropdown-content a {
+                    color: #333;
+                    padding: 10px 15px;
+                    text-decoration: none;
+                    display: block;
+                    font-weight: normal;
+                    white-space: normal;
+                    border-bottom: 1px solid #eee;
+                }
+
+                .dropdown-content a:last-child {
+                    border-bottom: none;
+                }
+
+                .dropdown-content a:hover {
+                    background-color: #f1f1f1;
+                }
+
+                .dropdown:hover .dropdown-content,
+                .dropdown:focus-within .dropdown-content {
+                    display: block;
+                }
+    </style>
+</head>
+
+<body>
+
+<header class="header">
+    <div class="navbar">
+        <div class="logo">
+            <h1>Krisaldu</h1>
+        </div>
+        <div class="navbar-items">
+            <a href="/home" class="navbar-item">Inicio</a>
+            <a href="/ejercicios" class="navbar-item">Ejercicios</a>
+            <a href="/minijuegos" class="navbar-item">Minijuegos</a>
+        </div>
+        <div class="user-info">
+            <span id="username">Hola, <span th:text="${nombre}">Usuario</span></span>
+            <div class="dropdown" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-controls="notificaciones-menu">
+                <button class="dropbtn" aria-label="Notificaciones">
+                    <img src="images/notificacion.png" alt="Notificaciones" class="notification-icon" />
+                    <span class="notification-count" th:if="${notificacionesSinLeer > 0}" th:text="${notificacionesSinLeer}">0</span>
+                </button>
+                <!-- Notificaciones desplegables -->
+                <div class="dropdown-content" id="notificaciones-menu" role="menu" aria-hidden="true" tabindex="-1"
+                     style="max-height: 300px; overflow-y: auto; min-width: 320px; background-color: #fff; border-radius: 5px; box-shadow: 0 8px 16px rgba(0,0,0,0.15);">
+                    <div th:if="${#lists.isEmpty(notificaciones)}" style="padding: 10px; font-style: italic; color: #666;">
+                        No tienes notificaciones.
+                    </div>
+
+                    <a th:each="notificacion : ${notificaciones}"
+                       th:href="@{/verMensaje/{mensajeId}(mensajeId=${notificacion.mensajeId})}"
+                       role="menuitem" tabindex="0"
+                       th:classappend="${notificacion.leido} ? '' : 'notificacion-nueva'">
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4caf50; font-weight: 600; user-select: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="#4caf50" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+                                <path d="M3 10v4h2l5 5V5L5 10H3zm16.5 2c0-1.05-.63-1.94-1.5-2.3v4.6c.87-.36 1.5-1.25 1.5-2.3zM14 7.7v8.6l3.5 2v-13l-3.5 2z"/>
+                            </svg>
+                            <span>Mensaje del terapeuta</span>
+                        </div>
+
+                        <div style="font-size: 15px; color: #333;">
+                            <span th:text="${notificacion.contenidoMensaje}">Contenido del mensaje aquí...</span>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+            <div class="dropdown">
+                <button class="dropbtn">▼</button>
+                <div class="dropdown-content">
+                    <a href="#" id="logout">Cerrar Sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Contenedor de los Minijuegos -->
+<div class="minijuego-container">
+    <div class="game-card" id="memory-game-card">
+        <h3>Juego de Memoria</h3>
+        <p style="text-align: justify;">Desafía tu memoria emparejando cartas en este juego de concentración. Recuerda la ubicación de las tarjetas para encontrar los pares correspondientes.</p>
+        <button class="start-btn" onclick="startMemoryGame()">Iniciar</button>
+    </div>
+    <div class="game-card" id="guess-number-card">
+        <h3>Adivina el Número</h3>
+        <p style="text-align: justify;">Pon a prueba tu habilidad para adivinar un número secreto generado aleatoriamente. Recibe pistas para acertar el número correcto.</p>
+        <button class="start-btn" onclick="startGuessNumber()">Iniciar</button>
+    </div>
+    <div class="game-card" id="sequence-game-card">
+        <h3>Secuencia Lógica</h3>
+        <p style="text-align: justify;">Descubre y completa el patrón lógico en este juego desafiante. Analiza la secuencia y elige el siguiente número o símbolo para continuar.</p>
+        <button class="start-btn" onclick="startSequenceGame()">Iniciar</button>
+    </div>
+</div>
+
+
+<!-- Juego de Memoria -->
+<div id="memory-game" class="memory-game" style="display: none;"></div>
+
+<!-- Adivina el Número -->
+<div id="guess-number" class="guess-number" style="display: none;">
+    <input type="number" id="guessInput" placeholder="Adivina un número entre 1 y 100" min="1" max="100">
+    <button class="start-btn" onclick="checkGuess()">Adivinar</button>
+    <p id="guess-result"></p>
+</div>
+
+<!-- Secuencia Lógica -->
+<div id="sequence-game" class="sequence-container" style="display: none;">
+    <button class="sequence-button" onclick="buttonClicked(1)">1</button>
+    <button class="sequence-button" onclick="buttonClicked(2)">2</button>
+    <button class="sequence-button" onclick="buttonClicked(3)">3</button>
+    <button class="sequence-button" onclick="buttonClicked(4)">4</button>
+    <p id="sequence-result"></p>
+</div>
+
+
+<script>
+    // Juego de Memoria
+let memoryCards = [];
+let flippedCards = [];
+let matchesFound = 0;
+
+function startMemoryGame() {
+    // Ocultar otros juegos y mostrar el juego de memoria
+    document.getElementById('memory-game').style.display = 'flex';
+    document.getElementById('guess-number').style.display = 'none';
+    document.getElementById('sequence-game').style.display = 'none';
+
+    // Limpiar el contenedor de las cartas del juego para reiniciar
+    const memoryGameContainer = document.getElementById('memory-game');
+    memoryGameContainer.innerHTML = '';
+
+    // Definir los símbolos para las cartas
+    const symbols = ['🍎', '🍌', '🍓', '🍉', '🍇', '🍒'];
+
+    // Generar las cartas duplicadas y tomar solo las primeras 12
+    memoryCards = [...symbols, ...symbols];
+    memoryCards = memoryCards.slice(0, 12);  // Asegurarse de que solo haya 12 cartas
+
+    // Barajar las cartas
+    memoryCards.sort(() => Math.random() - 0.5);
+
+    // Crear las cartas en el DOM
+    for (let i = 0; i < memoryCards.length; i++) {
+        const card = document.createElement('div');
+        card.classList.add('memory-card');
+        card.dataset.symbol = memoryCards[i];  // Asignar el símbolo a la carta
+        card.addEventListener('click', flipCard);  // Añadir el evento de clic
+        memoryGameContainer.appendChild(card);  // Añadir la carta al contenedor del juego
+    }
+
+    // Reiniciar el número de coincidencias encontradas
+    matchesFound = 0;
+}
+
+function flipCard() {
+    if (flippedCards.length === 2) return; // Limitar a 2 cartas volteadas
+
+    this.classList.add('flipped'); // Voltear la carta
+    this.textContent = this.dataset.symbol; // Mostrar el símbolo de la carta
+    flippedCards.push(this); // Añadir la carta al array de cartas volteadas
+
+    if (flippedCards.length === 2) {
+        setTimeout(checkMemoryMatch, 1000); // Verificar si las cartas coinciden después de 1 segundo
+    }
+}
+
+function checkMemoryMatch() {
+    if (flippedCards[0].dataset.symbol === flippedCards[1].dataset.symbol) {
+        matchesFound++; // Si las cartas coinciden, aumentar el contador
+        if (matchesFound === 6) {
+            alert("¡Has ganado el juego de memoria!"); // Si encuentras todas las parejas
+        }
+    } else {
+        flippedCards[0].classList.remove('flipped'); // Si no coinciden, volver a voltear las cartas
+        flippedCards[1].classList.remove('flipped');
+        flippedCards[0].textContent = ''; // Limpiar el contenido de las cartas
+        flippedCards[1].textContent = '';
+    }
+    flippedCards = []; // Reiniciar el array de cartas volteadas
+}
+
+
+    // Adivina el Número
+    let randomNumber = Math.floor(Math.random() * 100) + 1;
+
+    function startGuessNumber() {
+        document.getElementById('guess-number').style.display = 'block';
+        document.getElementById('memory-game').style.display = 'none';
+        document.getElementById('sequence-game').style.display = 'none';
+    }
+
+    function checkGuess() {
+        const guess = parseInt(document.getElementById('guessInput').value);
+        const result = document.getElementById('guess-result');
+        if (guess === randomNumber) {
+            result.textContent = '¡Correcto!';
+        } else if (guess > randomNumber) {
+            result.textContent = 'Demasiado alto. Intenta de nuevo.';
+        } else {
+            result.textContent = 'Demasiado bajo. Intenta de nuevo.';
+        }
+    }
+
+    // Secuencia Lógica
+    let sequence = [];
+    let userSequence = [];
+
+    function startSequenceGame() {
+        document.getElementById('sequence-game').style.display = 'block';
+        document.getElementById('memory-game').style.display = 'none';
+        document.getElementById('guess-number').style.display = 'none';
+        generateSequence();
+    }
+
+    function generateSequence() {
+        sequence = [1, 2, 3, 4];
+        sequence = sequence.sort(() => Math.random() - 0.5);
+        alert('Recuerda la secuencia: ' + sequence.join(' '));
+    }
+
+    function buttonClicked(num) {
+        userSequence.push(num);
+        if (userSequence.length === sequence.length) {
+            checkSequence();
+        }
+    }
+
+    function checkSequence() {
+        const result = document.getElementById('sequence-result');
+        if (userSequence.join('') === sequence.join('')) {
+            result.textContent = '¡Secuencia correcta!';
+        } else {
+            result.textContent = 'Secuencia incorrecta. Intenta de nuevo.';
+        }
+        userSequence = [];
+    }
+
+    document.getElementById('logout').addEventListener('click', function () {
+        alert("Cerrando sesión...");
+        window.location.href = "/login";
+    });
+</script>
+</body>
+</html>

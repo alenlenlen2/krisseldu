@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Asistencias</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background-color: #f9f9f9; padding: 0 20px; }
+        .header { background: #fff; padding: 20px 50px; box-shadow: 0 4px 10px rgba(0,0,0,.1); margin-bottom: 30px; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; }
+        .logo h1 { font-size: 28px; color: #2b78e4; font-weight: bold; letter-spacing: 1px; }
+        .navbar-items { display: flex; }
+        .navbar-item { margin-right: 25px; font-size: 18px; color: #333; font-weight: bold; text-decoration: none; }
+        .navbar-item:hover { color: #2b78e4; }
+        .user-info { display: flex; align-items: center; position: relative; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropbtn { background: transparent; border: none; color: #333; font-size: 16px; cursor: pointer; }
+        .dropdown-content { display: none; position: absolute; right: 0; background: #fff; box-shadow: 0 8px 16px rgba(0,0,0,.2); border-radius: 5px; z-index: 10; min-width: 200px; }
+        .dropdown:hover .dropdown-content { display: block; }
+        .videos-wrap {
+            margin: 50px auto 0 auto;
+            display: flex;
+            gap: 36px;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .video-col {
+            flex: 1 1 340px;
+            max-width: 500px;
+            min-width: 300px;
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 14px rgba(0,0,0,0.12);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .video-col h4 { font-size: 18px; color: #2b78e4; margin-bottom: 8px; font-weight: 600; }
+        video, #myVideo {
+            width: 100%;
+            max-width: 460px;
+            min-height: 260px;
+            border-radius: 8px;
+            background: #000;
+            margin-bottom: 10px;
+        }
+        .controls { text-align: center; margin-top: 16px; }
+        .controls button {
+            margin: 0 7px;
+            background: #4CAF50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .25s;
+        }
+        .controls button:hover { background: #368b3f; }
+        .alert { background: #4CAF50; color: #fff; padding: 13px; margin: 32px auto 0; border-radius: 5px; text-align: center; font-size: 17px; display: none; width: 100%; max-width: 600px; }
+        @media (max-width: 900px) {
+            .videos-wrap { flex-direction: column; align-items: stretch; gap: 18px;}
+            .video-col { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="navbar">
+        <div class="logo"><h1>Krisaldu</h1></div>
+        <div class="navbar-items">
+            <a href="/home" class="navbar-item">Inicio</a>
+            <a href="/ejercicios" class="navbar-item">Ejercicios</a>
+            <a href="/minijuegos" class="navbar-item">Minijuegos</a>
+        </div>
+        <div class="user-info">
+            <span id="username">Hola, <span th:text="${nombre}">Usuario</span></span>
+            <div class="dropdown">
+                <button class="dropbtn">▼</button>
+                <div class="dropdown-content">
+                    <a href="#" id="logout">Cerrar Sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="videos-wrap">
+
+        <!-- Video guía (referencial) -->
+        <div class="video-col">
+            <h4>Video guía</h4>
+            <video controls id="videoGuia">
+                <source th:if="${ejercicio != null}" th:src="@{/terapeuta/videos/{video}(video=${ejercicio.videoPath})}" type="video/mp4"/>
+                Tu navegador no soporta el elemento de video.
+            </video>
+        </div>
+
+        <!-- Si el usuario ya grabó/subió un video para este ejercicio, lo mostramos -->
+        <div class="video-col" th:if="${videoPersonalizado != null}">
+            <h4>Tu video grabado</h4>
+            <video controls>
+                <source th:src="@{/usuario/videos/{video}(video=${videoPersonalizado})}" type="video/mp4"/>
+                Tu navegador no soporta el elemento de video.
+            </video>
+        </div>
+
+        <!-- Si no hay video personalizado, mostramos el cuadro para grabar -->
+        <div class="video-col" th:if="${videoPersonalizado == null}">
+            <h4>Graba tu rutina</h4>
+            <video id="myVideo" autoplay muted playsinline></video>
+            <div class="controls">
+                <button type="button" onclick="startRec()">Grabar</button>
+                <button type="button" onclick="stopRec()" id="stopBtn" style="display:none">Detener</button>
+                <button type="button" onclick="playRec()" id="playBtn" style="display:none">Reproducir</button>
+            </div>
+            <form id="finalizarForm" method="POST" action="/finalizarRutina" style="text-align:center;margin-top:18px">
+                <input type="hidden" name="ejercicioId" id="ejercicioId" th:value="${ejercicioId}" />
+                <input type="hidden" name="video" id="videoInput" />
+                <button type="submit" id="sendButton" style="display:none">Enviar Rutina</button>
+            </form>
+        </div>
+    </section>
+
+    <div class="alert" id="alertBox">¡Se registró tu rutina correctamente!</div>
+</main>
+
+<script>
+    let mediaRecorder, recordedChunks = [], recordedBlob;
+    let videoStream;
+
+    const video = document.getElementById('myVideo');
+    const stopBtn = document.getElementById('stopBtn');
+    const playBtn = document.getElementById('playBtn');
+    const sendBtn = document.getElementById('sendButton');
+    const videoInput = document.getElementById('videoInput');
+
+    // Inicia grabación
+    function startRec() {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(function(stream) {
+                videoStream = stream;
+                video.srcObject = stream;
+                mediaRecorder = new MediaRecorder(stream);
+
+                recordedChunks = [];
+                mediaRecorder.ondataavailable = function(e) {
+                    if (e.data.size > 0) recordedChunks.push(e.data);
+                };
+                mediaRecorder.onstop = function() {
+                    recordedBlob = new Blob(recordedChunks, { type: "video/mp4" });
+                    video.srcObject = null;
+                    video.src = URL.createObjectURL(recordedBlob);
+                    playBtn.style.display = "";
+                    sendBtn.style.display = "";
+                    // Convertimos a base64 para enviar al backend si lo necesitas:
+                    let reader = new FileReader();
+                    reader.onloadend = function() {
+                        videoInput.value = reader.result; // Esto será "data:video/mp4;base64,AAA..."
+                    };
+                    reader.readAsDataURL(recordedBlob);
+                };
+                mediaRecorder.start();
+                stopBtn.style.display = "";
+            });
+    }
+
+    // Detener grabación
+    function stopRec() {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+            }
+            stopBtn.style.display = "none";
+        }
+    }
+
+    // Reproducir la grabación
+    function playRec() {
+        if (video.src) video.play();
+    }
+
+    document.getElementById('logout').addEventListener('click', function () {
+        alert("Cerrando sesión...");
+        window.location.href = "/login";
+    });
+</script>
+</body>
+</html>

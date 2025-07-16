@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Panel Terapeuta</title>
+
+    <!-- ============  ESTILOS  ============ -->
+    <style>
+        :root{
+          --brand:#2b78e4;   /* azul marca */
+          --accent:#4caf50;  /* verde acento */
+          --bg:#f9f9f9;
+          --radius:8px;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
+        body{background:var(--bg);padding:0 20px;}
+
+        /* ---------- HEADER (sin cambios mayores) ---------- */
+        .header{background:#fff;padding:20px 50px;box-shadow:0 4px 10px rgba(0,0,0,.08);margin-bottom:30px;}
+        .navbar{display:flex;justify-content:space-between;align-items:center;}
+        .logo h1{font-size:28px;font-weight:700;color:var(--brand);letter-spacing:.5px}
+        .navbar-items{display:flex;gap:26px}
+        .navbar-item{font-size:18px;font-weight:600;color:#333;text-decoration:none;transition:.2s}
+        .navbar-item:hover,.navbar-item.active{color:var(--accent)}
+        .user-info{display:flex;align-items:center;gap:18px}
+
+        /* Notificaciones (eliminamos icono "correo", mantenemos sino bell) */
+        .notification-icon{width:20px;position:relative;cursor:pointer}
+        .notification-count{position:absolute;top:-6px;right:-6px;background:red;color:#fff;font-size:11px;border-radius:50%;padding:2px 5px}
+
+        .dropdown{position:relative}
+        .dropbtn{background:none;border:none;font-size:16px;font-weight:600;cursor:pointer}
+        .dropdown-content{display:none;position:absolute;right:0;background:#fff;min-width:160px;border-radius:var(--radius);box-shadow:0 6px 14px rgba(0,0,0,.12);overflow:hidden;z-index:10}
+        .dropdown-content a{display:block;padding:10px 14px;font-weight:500;color:#333;text-decoration:none}
+        .dropdown-content a:hover{background:#f5f5f5}
+        .dropdown:hover .dropdown-content{display:block}
+
+        /* ---------- FILTRO minimal ---------- */
+        .filter-container{max-width:1100px;margin:0 auto 24px;display:flex;justify-content:flex-start;gap:14px}
+        .filter-container input{flex:0 0 260px;padding:9px 14px;border:1px solid #ddd;border-radius:var(--radius);font-size:15px;transition:.2s}
+        .filter-container input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(43,120,228,.15)}
+
+        /* ---------- TABLE ---------- */
+        .table-container{max-width:1100px;margin:0 auto;background:#fff;border-radius:var(--radius);box-shadow:0 4px 12px rgba(0,0,0,.06);overflow-x:auto}
+        table{width:100%;border-collapse:collapse;font-size:15px}
+        thead{background:var(--accent);color:#fff}
+        th,td{padding:12px 14px;border-bottom:1px solid #eee;text-align:left}
+        tbody tr:hover{background:#fafafa}
+        a.no-underline{color:var(--brand);font-weight:600;text-decoration:none}
+        a.no-underline:hover{text-decoration:underline}
+
+        /* ---------- RESPONSIVE ---------- */
+        @media(max-width:760px){
+          .navbar-items{gap:16px}
+          .navbar-item{font-size:16px}
+          th,td{padding:10px}
+          .filter-container input{flex:1}
+        }
+    </style>
+</head>
+<body>
+<!-- ================================= HEADER ================================= -->
+<header class="header" role="banner">
+    <div class="navbar">
+        <div class="logo"><h1>Krisaldu</h1></div>
+
+        <!-- … cabecera sin cambios … -->
+        <nav class="navbar-items">
+            <a href="/terapeuta" class="navbar-item active" id="linkPac">Pacientes</a>
+            <!-- 🔽  RUTA ACTUALIZADA  -->
+            <a href="/terapeuta/asignar" class="navbar-item" id="linkAsig">Asignar ejercicios</a>
+        </nav>
+        <!-- … resto del documento igual … -->
+
+        <div class="user-info">
+            <span id="username">Hola,&nbsp;<span th:text="${nombre}">Usuario</span></span>
+
+            <!-- Notificaciones -->
+            <div class="dropdown">
+                <button class="dropbtn">
+                    <img src="/images/notificacion.png" class="notification-icon" alt="Notificaciones"/>
+                    <span class="notification-count" th:if="${notificacionesSinLeer>0}" th:text="${notificacionesSinLeer}">0</span>
+                </button>
+                <div class="dropdown-content" style="max-height:260px;overflow-y:auto">
+                    <div th:if="${#lists.isEmpty(notificaciones)}" style="padding:10px;color:#777;font-style:italic">No tienes notificaciones.</div>
+                    <a th:each="n:${notificaciones}" th:href="@{'/verMensaje/{id}'(id=${n.mensajeId})}">
+                        <span th:text="${n.contenidoMensaje}">Mensaje…</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Menú de usuario -->
+            <div class="dropdown">
+                <button class="dropbtn">▼</button>
+                <div class="dropdown-content"><a href="#" id="logout">Cerrar sesión</a></div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- ================================= FILTRO & TABLA ================================= -->
+<section class="filter-container">
+    <input id="filtro" placeholder="Buscar por nombre o DNI…" oninput="filterPatients()">
+</section>
+
+<main class="table-container" role="main">
+    <table aria-describedby="listPac">
+        <caption id="listPac" style="display:none">Lista de pacientes</caption>
+        <thead><tr>
+            <th>Nombre</th><th>DNI</th><th>Condición</th><th>Edad</th><th>Asistencia</th><th>Estado</th><th>Acción</th>
+        </tr></thead>
+        <tbody id="patientsList">
+        <!-- ⚙ Render Thymeleaf -->
+        <tr th:each="paciente:${pacientes}">
+            <td th:text="${paciente.nombre}">Nombre</td>
+            <td th:text="${paciente.dni}">DNI</td>
+            <td th:text="${paciente.condicion}">Condición</td>
+            <td th:text="${paciente.edad}">Edad</td>
+            <td th:text="${paciente.asistenciaFecha!=null}?${#dates.format(paciente.asistenciaFecha,'dd/MM/yy HH:mm')}: '—'">—</td>
+            <td th:text="${paciente.asistenciaEstado}">Ausente</td>
+            <td><a th:href="@{/terapeuta/verPaciente/{id}(id=${paciente.id})}" class="no-underline">Ver</a></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(pacientes)}">
+            <td colspan="7" style="text-align:center;color:#888;font-style:italic">No hay pacientes registrados.</td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+
+<!-- =================================  SCRIPTS ================================= -->
+<script>
+    /* ------- Filtro dinámico ------- */
+    function filterPatients(){
+      const q=document.getElementById('filtro').value.trim();
+      fetch('/terapeuta?filtro='+encodeURIComponent(q))
+       .then(r=>r.text()).then(html=>{
+         const tbody=new DOMParser().parseFromString(html,'text/html')
+                      .getElementById('patientsList').innerHTML;
+         document.getElementById('patientsList').innerHTML=tbody;
+       });
+    }
+
+    /* ------- Logout ------- */
+    document.getElementById('logout').onclick=e=>{
+      e.preventDefault();
+      fetch('/logout',{credentials:'same-origin'}).then(()=>location.href='/login');
+    };
+</script>
+</body>
+</html>

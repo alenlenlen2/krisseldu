@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Asignar ejercicio • Terapeuta</title>
+    <style>
+        :root{--brand:#2b78e4;--accent:#4caf50;--bg:#f9f9f9;--radius:8px}
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+        body{background:var(--bg);padding:0 20px}
+        .header{background:#fff;padding:20px 50px;box-shadow:0 4px 10px rgba(0,0,0,.08);margin-bottom:30px}
+        .navbar{display:flex;justify-content:space-between;align-items:center}
+        .logo h1{font-size:28px;font-weight:700;color:var(--brand)}
+        .navbar-items{display:flex;gap:26px}
+        .navbar-item{font-size:18px;font-weight:600;color:#333;text-decoration:none;transition:.2s}
+        .navbar-item:hover,.navbar-item.active{color:var(--accent)}
+        .user-info{display:flex;align-items:center;gap:18px}
+        .notification-icon{width:20px;position:relative}
+        .notification-count{position:absolute;top:-6px;right:-6px;background:red;color:#fff;font-size:11px;border-radius:50%;padding:2px 5px}
+        .dropdown{position:relative}.dropbtn{background:none;border:none;font-size:16px;font-weight:600;cursor:pointer}
+        .dropdown-content{display:none;position:absolute;right:0;background:#fff;min-width:150px;border-radius:var(--radius);box-shadow:0 6px 14px rgba(0,0,0,.12);overflow:hidden;z-index:10}
+        .dropdown-content a{display:block;padding:10px 14px;font-weight:500;color:#333;text-decoration:none}
+        .dropdown-content a:hover{background:#f5f5f5}.dropdown:hover .dropdown-content{display:block}
+        .card{max-width:860px;margin:0 auto 40px;background:#fff;border-radius:var(--radius);
+              padding:32px 28px;box-shadow:0 6px 16px rgba(0,0,0,.06);display:flex;flex-direction:column;gap:28px}
+        .card h2{font-size:24px;color:var(--brand);font-weight:700;text-align:center}
+        .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
+        .form-grid label{font-size:14px;font-weight:600;color:#555;margin-bottom:4px;display:block}
+        .form-grid input,.form-grid textarea,select{
+            width:100%;padding:11px 14px;font-size:15px;border:1px solid #ccc;border-radius:var(--radius);transition:.2s}
+        .form-grid input:focus,textarea:focus,select:focus{
+            outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(43,120,228,.15)}
+        textarea{min-height:90px;resize:vertical}
+        .btn-primary{background:var(--accent);color:#fff;border:none;padding:12px 26px;font-size:16px;font-weight:600;
+                     border-radius:var(--radius);cursor:pointer;transition:background .25s}
+        .btn-primary:hover{background:#43a047}
+        .btn-sec{background:#e0e0e0;color:#333;padding:10px 22px;border:none;border-radius:var(--radius);cursor:pointer;margin-left:8px}
+        table{width:100%;border-collapse:collapse;font-size:15px}
+        thead{background:#e8f5e9}th,td{padding:10px 12px;border-bottom:1px solid #eee;text-align:left}
+        tbody tr:hover{background:#fafafa}
+        .action-btn{cursor:pointer;font-weight:600;color:var(--brand);margin-right:14px}
+        .action-btn.delete{color:#d32f2f}
+        #toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#4caf50;color:#fff;
+               padding:12px 26px;border-radius:var(--radius);font-weight:600;opacity:0;pointer-events:none;transition:.4s}
+        #toast.show{opacity:1;transform:translateX(-50%) translateY(-10px)}
+        .video-preview {margin-top:6px;}
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="navbar">
+        <div class="logo"><h1>Krisaldu</h1></div>
+        <nav class="navbar-items">
+            <a href="/terapeuta" class="navbar-item">Pacientes</a>
+            <a href="/terapeuta/asignar" class="navbar-item active">Asignar ejercicios</a>
+        </nav>
+        <div class="user-info">
+            <span>Hola,&nbsp;<span th:text="${nombre}">Usuario</span></span>
+            <div class="dropdown">
+                <button class="dropbtn"><img src="/images/notificacion.png" class="notification-icon">
+                    <span class="notification-count" th:if="${notificacionesSinLeer>0}"
+                          th:text="${notificacionesSinLeer}">0</span>
+                </button>
+                <div class="dropdown-content" style="max-height:260px;overflow-y:auto">
+                    <div th:if="${#lists.isEmpty(notificaciones)}" style="padding:10px;color:#777;font-style:italic">
+                        No tienes notificaciones.
+                    </div>
+                    <a th:each="n:${notificaciones}" th:href="@{'/verMensaje/{id}'(id=${n.mensajeId})}"
+                       th:text="${n.contenidoMensaje}">Mensaje…</a>
+                </div>
+            </div>
+            <div class="dropdown"><button class="dropbtn">▼</button>
+                <div class="dropdown-content"><a href="#" id="logout">Cerrar sesión</a></div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section class="card">
+    <h2>Asignar / editar ejercicio</h2>
+    <form id="formEj" class="form-grid" autocomplete="off" enctype="multipart/form-data">
+        <input type="hidden" name="ejercicioId" id="ejercicioId">
+        <div>
+            <label>Paciente</label>
+            <select id="selPaciente" name="pacienteId" required>
+                <option value="">Seleccione…</option>
+                <option th:each="p:${pacientes}"
+                        th:value="${p.id}"
+                        th:data-condicion="${p.condicion}"
+                        th:text="${p.nombre + ' (' + p.dni + ')'}">Paciente</option>
+            </select>
+        </div>
+        <div>
+            <label>Condición</label>
+            <input id="condicion" readonly placeholder="—">
+        </div>
+        <div>
+            <label>Nombre ejercicio</label>
+            <input name="nombre" id="nombre" required>
+        </div>
+        <div>
+            <label>Horarios</label>
+            <input name="horarios" id="horarios">
+        </div>
+        <div style="grid-column:1/-1">
+            <label>Descripción</label>
+            <textarea name="descripcion" id="descripcion"></textarea>
+        </div>
+        <div>
+            <label>Video guía (opcional)</label>
+            <input type="file" id="videoEjercicio" name="videoEjercicio" accept="video/*">
+            <div id="videoActual" class="video-preview"></div>
+        </div>
+        <div style="grid-column:1/-1;text-align:center">
+            <button class="btn-primary" id="btnGuardar">Guardar</button>
+            <button type="button" class="btn-sec" id="btnCancelar" style="display:none">Cancelar edición</button>
+        </div>
+    </form>
+    <div id="tablaWrap" style="display:none">
+        <h3 style="margin:6px 0 10px 0;color:#555">Ejercicios asignados</h3>
+        <table>
+            <thead><tr><th>Nombre</th><th>Horarios</th><th>Descripción</th><th>Acciones</th></tr></thead>
+            <tbody id="tbodyEj"></tbody>
+        </table>
+    </div>
+</section>
+
+<div id="toast">Hecho</div>
+
+<!-- ...resto del código arriba igual... -->
+
+<script>
+    // Utilidad toast
+    const toast = m=>{
+        const t=document.getElementById('toast');
+        t.textContent=m||'Hecho';
+        t.classList.add('show');
+        setTimeout(()=>t.classList.remove('show'),2800);
+    };
+    document.getElementById('logout').onclick=e=>{
+        e.preventDefault();
+        location='/logout';
+    };
+
+    // Referencias
+    const selPac=document.getElementById('selPaciente'),
+          condicion=document.getElementById('condicion'),
+          tbody=document.getElementById('tbodyEj'),
+          tablaWrap=document.getElementById('tablaWrap'),
+          formEj=document.getElementById('formEj'),
+          ejercicioId=document.getElementById('ejercicioId'),
+          nombre=document.getElementById('nombre'),
+          horarios=document.getElementById('horarios'),
+          descripcion=document.getElementById('descripcion'),
+          btnCancelar=document.getElementById('btnCancelar'),
+          videoInput=document.getElementById('videoEjercicio'),
+          videoActual=document.getElementById('videoActual');
+
+    function setCondicionByPaciente(){
+        const opt=selPac.selectedOptions[0];
+        condicion.value = (opt && opt.dataset.condicion) ? opt.dataset.condicion : "";
+    }
+
+    selPac.addEventListener('change',()=>{
+        setCondicionByPaciente();
+        if(selPac.value){
+            cargarEjercicios(selPac.value);
+        }else{
+            tablaWrap.style.display='none';
+            tbody.innerHTML = '';
+        }
+        resetForm();
+    });
+
+    function cargarEjercicios(pacId){
+        fetch(`/terapeuta/paciente/${pacId}/ejercicios`)
+          .then(r=>r.json())
+          .then(list=>{
+              tablaWrap.style.display=list.length ? 'block' : 'none';
+              tbody.innerHTML=list.length ? list.map(e=>`
+                <tr>
+                  <td>${e.nombre}</td>
+                  <td>${e.horarios||'—'}</td>
+                  <td>${e.descripcion||'—'}</td>
+                  <td>
+                    <span class="action-btn"   onclick="editar(${e.id})">Editar</span>
+                    <span class="action-btn delete" onclick="eliminar(${e.id})">Eliminar</span>
+                  </td>
+                </tr>`).join('')
+                : '<tr><td colspan="4" style="text-align:center;color:#888;font-style:italic">No hay ejercicios asignados.</td></tr>';
+          });
+    }
+
+    function editar(id){
+        fetch(`/terapeuta/ejercicios/${id}`)
+          .then(r=>r.json())
+          .then(e=>{
+              ejercicioId.value=e.id;
+              nombre.value=e.nombre;
+              horarios.value=e.horarios||'';
+              descripcion.value=e.descripcion||'';
+              btnCancelar.style.display='inline-block';
+              // Mostrar nombre y reproductor del video guía, si existe
+              if(e.videoPath){
+                  videoActual.innerHTML = `<small>Video actual:</small>
+                      <video width="260" controls style="display:block;margin-top:4px;">
+                        <source src="/terapeuta/videos/${e.videoPath}" type="video/mp4">
+                        Tu navegador no soporta el elemento de video.
+                      </video>
+                      <div style="font-size:13px;color:#4caf50;margin-top:3px;">${e.videoPath}</div>`;
+              } else {
+                  videoActual.innerHTML = "";
+              }
+          });
+    }
+    function eliminar(id){
+        if(!confirm('¿Eliminar ejercicio?')) return;
+        fetch(`/terapeuta/ejercicios/${id}`,{method:'DELETE'})
+          .then(r=>{if(!r.ok) throw 0; toast('Eliminado'); cargarEjercicios(selPac.value);})
+          .catch(()=>alert('No se pudo eliminar'));
+    }
+    function resetForm(){
+        ejercicioId.value='';
+        nombre.value='';
+        horarios.value='';
+        descripcion.value='';
+        videoInput.value='';
+        videoActual.innerHTML = '';
+        btnCancelar.style.display='none';
+    }
+    btnCancelar.onclick=resetForm;
+
+    formEj.addEventListener('submit',ev=>{
+        ev.preventDefault();
+        if(!selPac.value) return alert('Seleccione paciente');
+        const formData = new FormData(formEj);
+
+        // Al crear, quitar ejercicioId (está vacío)
+        if(!ejercicioId.value) formData.delete('ejercicioId');
+        // Al editar, quitar pacienteId (el backend no lo espera)
+        if(ejercicioId.value) formData.delete('pacienteId');
+
+        let url, method;
+        if(ejercicioId.value){
+            url=`/terapeuta/ejercicios/${ejercicioId.value}`; method='PUT';
+        }else{
+            url=`/terapeuta/paciente/${selPac.value}/ejercicios`; method='POST';
+        }
+        fetch(url,{method,body:formData})
+          .then(r=>{
+              if(!r.ok) throw 0;
+              toast('Guardado');
+              resetForm();
+              setCondicionByPaciente();
+              cargarEjercicios(selPac.value);
+          })
+          .catch(()=>alert('No se pudo guardar'));
+    });
+
+    window.addEventListener('DOMContentLoaded',()=>{
+        setCondicionByPaciente();
+        if(selPac.value) cargarEjercicios(selPac.value);
+    });
+</script>
+</body>
+</html>

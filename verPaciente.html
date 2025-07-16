@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ver Datos del Paciente</title>
+    <style>
+        /* Reseteo de márgenes y padding */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            padding: 0 20px;
+        }
+        /* Barra de navegación superior */
+        .header {
+            background-color: #ffffff;
+            padding: 20px 50px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo h1 {
+            font-size: 28px;
+            color: #2b78e4; /* Krisaldu en verde */
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 16px;
+            color: #333;
+            position: relative;
+        }
+        .notification-icon {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            position: relative;
+        }
+        .notification-count {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background-color: red;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 50%;
+            padding: 2px 6px;
+            min-width: 18px;
+            text-align: center;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropbtn {
+            background-color: transparent;
+            border: none;
+            color: #333;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 0;
+            font-weight: bold;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #fff;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            z-index: 100;
+            min-width: 300px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .dropdown-content p, .dropdown-content a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            font-weight: normal;
+            white-space: normal;
+        }
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+        .dropdown:hover .dropdown-content,
+        .dropdown:focus-within .dropdown-content {
+            display: block;
+        }
+        /* Contenedor principal */
+        .table-container {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px;
+            width: 80%;
+            margin: 30px auto;
+            box-sizing: border-box;
+        }
+        /* Información del paciente */
+        .patient-info {
+            width: 65%;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+        .patient-info h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #2b78e4;
+        }
+        .patient-info p {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #777;
+        }
+        /* Video */
+        .video-box {
+            background-color: #ddd;
+            width: 100%;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            font-size: 24px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .video-box video {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 5px;
+        }
+        /* Retroalimentación */
+        .feedback-section {
+            width: 30%;
+            padding: 20px;
+            background-color: #0277bd;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        .feedback-section h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .feedback-section textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            background-color: #fff;
+            font-size: 16px;
+            color: #333;
+            resize: none;
+            box-sizing: border-box;
+            flex-grow: 1;
+        }
+        .feedback-section button {
+            background-color: #009e0f;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .feedback-section button:hover {
+            background-color: #009e0f;
+        }
+        /* Botón regresar */
+        .back-button {
+            background-color: #009e0f;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .back-button:hover {
+            background-color: #009e0f;
+        }
+    </style>
+</head>
+<body>
+
+<header class="header" role="banner">
+    <div class="logo" aria-label="Logo">
+        <h1>Krisaldu</h1>
+    </div>
+    <div class="user-info">
+        <span id="username">Hola, <span th:text="${nombre}">Usuario</span></span>
+        <div class="dropdown" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-controls="notificaciones-menu">
+
+        </div>
+        <div class="dropdown">
+            <button class="dropbtn">▼</button>
+            <div class="dropdown-content">
+                <a href="#" id="logout">Cerrar Sesión</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="table-container">
+    <!-- Información del paciente -->
+    <div class="patient-info">
+        <h3>Datos del Paciente</h3>
+        <p><strong>Usuario:</strong> <span th:text="${paciente.nombre}">Juan Pérez</span></p>
+        <p><strong>Edad:</strong> <span th:text="${paciente.edad}">30</span> años</p>
+        <p><strong>Condición:</strong> <span th:text="${paciente.condicion}">Tendinitis</span></p>
+        <p><strong>Estado de Asistencia:</strong> <span th:text="${paciente.asistenciaEstado}">Presente</span></p>
+        <p><strong>Fecha de Asistencia:</strong>
+            <span th:text="${paciente.asistenciaFecha != null} ? ${#dates.format(paciente.asistenciaFecha, 'dd/MM/yyyy HH:mm')} : 'No registrado'">01/01/2024 10:00</span>
+        </p>
+
+        <!-- Video del paciente -->
+        <div class="video-box">
+            <video width="100%" height="auto" controls>
+                <source src="/images/cognitivograbado.mp4" type="video/mp4">
+                Tu navegador no soporta el elemento de video.
+            </video>
+        </div>
+    </div>
+
+    <!-- Retroalimentación -->
+    <div class="feedback-section">
+        <h3>Mensaje al Paciente</h3>
+        <form method="post" th:action="@{/terapeuta/enviarMensaje}">
+            <textarea name="mensaje" placeholder="Escribe un mensaje para el paciente..." required></textarea>
+            <input type="hidden" name="pacienteId" th:value="${paciente.id}" />
+            <button type="submit">Enviar mensaje</button>
+        </form>
+        <button class="back-button" onclick="window.location.href='/terapeuta';">Regresar</button>
+    </div>
+</div>
+
+<script>
+    const dropbtns = document.querySelectorAll('.dropbtn');
+    const dropdownContents = document.querySelectorAll('.dropdown-content');
+
+    dropbtns.forEach((btn, i) => {
+        btn.addEventListener('click', () => {
+            const expanded = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', String(!expanded));
+            const dropdown = dropdownContents[i];
+            if (expanded) {
+                dropdown.style.display = 'none';
+                dropdown.setAttribute('aria-hidden', 'true');
+            } else {
+                dropdown.style.display = 'block';
+                dropdown.setAttribute('aria-hidden', 'false');
+            }
+        });
+    });
+
+    document.getElementById('logout').addEventListener('click', () => {
+        if(confirm('¿Desea cerrar sesión?')) {
+            window.location.href = '/login';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (![...dropbtns].some(btn => btn.contains(e.target)) &&
+            ![...dropdownContents].some(dc => dc.contains(e.target))) {
+            dropbtns.forEach((btn, i) => {
+                btn.setAttribute('aria-expanded', 'false');
+                dropdownContents[i].style.display = 'none';
+                dropdownContents[i].setAttribute('aria-hidden', 'true');
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
